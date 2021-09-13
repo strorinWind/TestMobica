@@ -65,13 +65,16 @@ class ListViewModel(
     }
 
     private fun loadFromFile() {
-        val fis: FileInputStream = context.openFileInput(FILENAME)
-        val stream = ObjectInputStream(fis)
-        val page: Page = stream.readObject() as Page
-        stream.close()
-        fis.close()
-
         viewModelScope.launch(handler) {
+            val page: Page
+            withContext(Dispatchers.IO) {
+                val fis: FileInputStream = context.openFileInput(FILENAME)
+                val stream = ObjectInputStream(fis)
+                page = stream.readObject() as Page
+                stream.close()
+                fis.close()
+            }
+
             withContext(Dispatchers.Main) {
                 _data.value = page.cards
             }

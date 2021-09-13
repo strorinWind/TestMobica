@@ -19,7 +19,7 @@ object RetrofitObject {
     @ExperimentalSerializationApi
     private var retrofit = Retrofit.Builder()
         .client(client)
-        .baseUrl("https://financialmodelingprep.com/api/v3/")
+        .baseUrl("https://private-8ce77c-tmobiletest.apiary-mock.com/test/")
         .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
         .build()
 

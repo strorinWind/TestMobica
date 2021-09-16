@@ -50,7 +50,7 @@ class ListAdapter: RecyclerView.Adapter<ListAdapter.CardViewHolder>() {
     private fun setImageToImageView(view: ImageView, image: Image) {
         Glide.with(view.context)
                 .load(image.url)
-                .centerCrop()
+                .centerInside()
                 .into(view);
     }
 

@@ -21,7 +21,6 @@ class ListViewModelFactory(
                         RetrofitObject.retrofitClient,
                         applicationContext
                         )
-//                model.onAfterInit()
                 model as T
             }
             else -> throw IllegalArgumentException("viewmodel type is not supported")

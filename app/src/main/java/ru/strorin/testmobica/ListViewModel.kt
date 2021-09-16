@@ -1,19 +1,22 @@
 package ru.strorin.testmobica
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.*
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.serializer
 import ru.strorin.testmobica.network.Card
 import ru.strorin.testmobica.network.Page
 import ru.strorin.testmobica.network.RetrofitClient
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
+import java.io.*
+import java.util.concurrent.TimeoutException
 
+@ExperimentalSerializationApi
 class ListViewModel(
         private val retrofitApi: RetrofitClient,
         private val context: Context
@@ -29,6 +32,7 @@ class ListViewModel(
 
     private val handler = CoroutineExceptionHandler { context, exception ->
         when(exception) {
+            is TimeoutException -> println("given more time we schedule next network request to check if internet is here")
             else -> println("Caught $exception")
         }
     }
@@ -57,27 +61,31 @@ class ListViewModel(
     }
 
     private fun saveToFile(page: Page) {
-        val fos: FileOutputStream = context.openFileOutput(FILENAME, Context.MODE_PRIVATE)
-        val os = ObjectOutputStream(fos)
-        os.writeObject(page)
-        os.close()
-        fos.close()
+        val file = getCashFile()
+        val encodeToString = Json.encodeToString(serializer(Page::class.java), page)
+        Log.d("caught write", encodeToString)
+        file.writeText(encodeToString)
     }
 
     private fun loadFromFile() {
         viewModelScope.launch(handler) {
             val page: Page
             withContext(Dispatchers.IO) {
-                val fis: FileInputStream = context.openFileInput(FILENAME)
-                val stream = ObjectInputStream(fis)
-                page = stream.readObject() as Page
-                stream.close()
-                fis.close()
+                val file = getCashFile()
+                val useLines = file.useLines { it.toList() }.first() //consider json as written single line
+                page = Json.decodeFromString(serializer(Page::class.java), useLines) as Page
             }
 
             withContext(Dispatchers.Main) {
                 _data.value = page.cards
             }
         }
+    }
+
+    private fun getCashFile(): File {
+        val path = context.filesDir
+        val letDirectory = File(path, "")
+        letDirectory.mkdirs()
+        return File(letDirectory, FILENAME)
     }
 }

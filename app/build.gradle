@@ -2,6 +2,7 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+//    id "org.jetbrains.kotlin.multiplatform"
     id "org.jetbrains.kotlin.plugin.serialization" version "$kotlin_version"
 }
 apply from: "../dependencies.gradle"
